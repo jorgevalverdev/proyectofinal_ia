@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NER with NLTK</title>
+</head>
+<body>
+    <h1>Named Entity Recognition</h1>
+    <form method="post">
+        {% csrf_token %}
+        <textarea name="text" rows="10" cols="50"></textarea><br>
+        <input type="submit" value="Analyze">
+    </form>
+    {% if entities %}
+        <h2>Entities:</h2>
+        <ul>
+        {% for entity, label in entities %}
+            <li>{{ entity }} ({{ label }})</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>
