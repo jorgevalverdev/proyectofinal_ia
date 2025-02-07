@@ -13,19 +13,18 @@
             margin: 0;
             padding: 0;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            height: 100vh;
-            overflow: hidden; /* Prevent body scroll */
+            min-height: 100vh; /* Ensure the body takes at least the full viewport height */
+            overflow-y: auto; /* Enable vertical scroll */
         }
 
         .outer-container {
             width: 100%;
-            height: 100%;
             display: flex;
             justify-content: center;
-            align-items: center;
-            overflow: hidden;
+            align-items: flex-start; /* Align container to the top */
+            padding-top: 20px; /* Add some padding at the top */
         }
 
         .container {
@@ -37,7 +36,7 @@
             max-width: 800px;
             color: #00ffcc;
             overflow-y: auto; /* Enable vertical scroll */
-            max-height: 90vh; /* Adjust to fit within the viewport */
+            margin-top: 20px; /* Add margin to position the container at the top */
         }
 
         textarea {
@@ -55,9 +54,22 @@
 
         .buttons {
             display: flex;
-            align-items: flex-end; /* Align items to the bottom */
+            justify-content: space-between; /* Space between left and right groups */
+            align-items: center; /* Align items vertically */
             margin-bottom: 1.5rem;
-            flex-wrap: wrap; /* Allow buttons to wrap to the next line */
+            gap: 10px; /* 10px spacing between child elements */
+        }
+
+        .left-group {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Spacing between threshold input and checkbox */
+        }
+
+        .right-group {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Spacing between buttons */
         }
 
         button, .upload-btn {
@@ -69,9 +81,13 @@
             font-size: 1rem;
             cursor: pointer;
             transition: background-color 0.3s ease;
-            margin-bottom: 10px; /* Add margin for spacing */
             height: 40px; /* Fixed height for buttons */
             box-sizing: border-box; /* Ensure padding is included in height */
+            width: 120px; /* Fixed width for all buttons */
+            text-align: center; /* Center text inside buttons */
+            white-space: nowrap; /* Prevent text from wrapping */
+            overflow: hidden; /* Hide overflow */
+            text-overflow: ellipsis; /* Add ellipsis for overflow text */
         }
 
         button:hover, .upload-btn:hover {
@@ -108,6 +124,7 @@
             display: flex;
             align-items: center;
             margin-bottom: 1rem;
+            gap: 10px; /* 10px spacing between child elements */
         }
 
         .file-input-container input[type="file"] {
@@ -123,7 +140,13 @@
             font-size: 1rem;
             cursor: pointer;
             transition: background-color 0.3s ease;
-            margin-right: 10px; /* Add margin for spacing */
+            height: 40px; /* Same height as buttons */
+            box-sizing: border-box; /* Ensure padding is included in height */
+            width: 120px; /* Fixed width for all buttons */
+            text-align: center; /* Center text inside buttons */
+            white-space: nowrap; /* Prevent text from wrapping */
+            overflow: hidden; /* Hide overflow */
+            text-overflow: ellipsis; /* Add ellipsis for overflow text */
         }
 
         .file-input-container label:hover {
@@ -131,39 +154,95 @@
         }
 
         .threshold-input {
-            width: 100px; /* Adjust width as needed */
+            width: 120px; /* Same width as buttons */
             padding: 10px;
             border: 2px solid #00ffcc;
             border-radius: 5px;
             background-color: #1a1a1a;
             color: #ffffff;
             font-size: 1rem;
-            margin-right: 5px; /* 5px spacing between Threshold and Analyze */
             height: 40px; /* Same height as buttons */
             box-sizing: border-box; /* Ensure padding is included in height */
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 5px; /* Spacing between checkbox and label */
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            margin: 0; /* Remove default margin */
+        }
+
+        .checkbox-container label {
+            color: #ffffff;
+            font-size: 1rem;
+        }
+
+        /* Spinner and loading message styles */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 1.5rem;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 255, 204, 0.3);
+            border-top: 4px solid #00ffcc;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-message {
+            color: #00ffcc;
+            font-size: 1rem;
         }
     </style>
 </head>
 <body>
     <div class="outer-container">
         <div class="container">
-            <h1>Named Entity Recognition (NER) with NLTK</h1>
+            <h1>Proyecto Final Cibertec</h1>
+            <h2>Named Entity Recognition (NER) y Agrupaci&oacute;n de Entidades mediante Similitud de Coseno con TF-IDF Vectorizer empleando la librer&iacute;a NLTK</h2>
             <form id="ner-form" method="post">
                 {% csrf_token %}
                 <div class="file-input-container">
                     <input type="file" id="file-input" accept=".docx,.pdf,.txt">
-                    <label for="file-input" class="upload-btn">Upload File</label>
+                    <label for="file-input" class="upload-btn">Upload</label>
                     <button type="button" id="clear-btn">Clear</button>
+                    <a href="{% url 'index' %}"><button type="button">Home</button></a>
                 </div>
                 <textarea id="input-text" name="text" placeholder="Enter your text here..."></textarea>
                 <div class="buttons">
-                    <input type="text" id="threshold-input" class="threshold-input" placeholder="Threshold">
-                    <button type="submit">Analyze</button>
-                    <button type="button" id="save-btn">Save</button>
-                    <a href="{% url 'results' %}"><button type="button">View Saved Results</button></a>
-                    <a href="{% url 'index' %}"><button type="button">Home</button></a>
+                    <div class="left-group">
+                        <input type="text" id="threshold-input" class="threshold-input" name="threshold" placeholder="Threshold" value="0.5">
+                        <div class="checkbox-container">
+                            <input type="checkbox" id="all-labels" name="all_labels" checked>
+                            <label for="all-labels">All Labels</label>
+                        </div>
+                    </div>
+                    <div class="right-group">
+                        <button type="submit">Analyze</button>
+                        <button type="button" id="save-btn">Save</button>
+                        <a href="{% url 'results' %}"><button type="button">Results</button></a>
+                    </div>
                 </div>
             </form>
+            <div id="loading-container" class="loading-container hidden">
+                <div class="spinner hidden" id="spinner-wheel"></div>
+                <div class="loading-message hidden" id="spinner-text">NER in process... Please wait</div>
+            </div>
             <table id="results-table" class="hidden">
                 <thead>
                     <tr>
@@ -184,11 +263,25 @@
 
         document.getElementById('ner-form').addEventListener('submit', function (event) {
             event.preventDefault();
+
             const inputText = document.getElementById('input-text').value;
+            const threshold = document.getElementById('threshold-input').value; // Get the threshold value
+            const allLabels = document.getElementById('all-labels').checked;
+
             if (inputText.trim() === '') {
                 alert('Please enter some text to analyze.');
                 return;
             }
+
+            // Clear the table and hide it
+            const tableBody = document.querySelector('#results-table tbody');
+            tableBody.innerHTML = '';
+            document.getElementById('results-table').classList.add('hidden');
+
+            // Show the spinner and loading message
+            {% comment %} document.getElementById('loading-container').classList.remove('hidden'); {% endcomment %}
+            document.getElementById('spinner-wheel').classList.remove('hidden');
+            document.getElementById('spinner-text').classList.remove('hidden');
 
             fetch('{% url "index" %}', {
                 method: 'POST',
@@ -197,14 +290,14 @@
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 },
                 body: new URLSearchParams({
-                    'text': inputText
+                    'text': inputText,
+                    'threshold': threshold, // Include the threshold value in the POST request
+                    'allLabels': allLabels
                 })
             })
             .then(response => response.json())
             .then(data => {
                 analyzedData = data;
-                const tableBody = document.querySelector('#results-table tbody');
-                tableBody.innerHTML = '';
 
                 data.entities.sort((a, b) => {
                     if (b.count !== a.count) {
@@ -222,14 +315,26 @@
                     tableBody.appendChild(row);
                 });
 
+                // Hide the spinner and show the table
+                document.getElementById('loading-container').classList.add('hidden');
+                document.getElementById('spinner-wheel').classList.add('hidden');
+                document.getElementById('spinner-text').classList.add('hidden');
                 document.getElementById('results-table').classList.remove('hidden');
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                // Hide the spinner in case of error
+                document.getElementById('loading-container').classList.add('hidden');
+            });
         });
 
         document.getElementById('clear-btn').addEventListener('click', function () {
             document.getElementById('input-text').value = '';
+            document.getElementById('threshold-input').value = ''; // Clear the threshold input
+            document.getElementById('all-labels').checked = false;
             document.getElementById('results-table').classList.add('hidden');
+            document.getElementById('spinner-wheel').classList.add('hidden');
+            document.getElementById('spinner-text').classList.add('hidden');
             document.querySelector('#results-table tbody').innerHTML = '';
             analyzedData = null;
         });

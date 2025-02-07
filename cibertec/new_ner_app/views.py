@@ -13,8 +13,26 @@ from .nlp.cosine_similarity import cosine_similarity_tfidf, merge_entities
 def index(request):
     if request.method == 'POST':
         text = request.POST.get('text')
+        try:
+            threshold = float(request.POST.get('threshold'))
+        except Exception:
+            threshold = 0.3
+        allLabels = request.POST.get('allLabels')
+        if allLabels=='true':
+            labels=['PERSON', 'GPE', 'DATE', 'TIME', 'LOCATION', 'ORGANIZATION', 'MONEY', 'PERCENT', 'FACILITY']
+        else:
+            labels=['PERSON', 'GPE', 'DATE', 'TIME', 'LOCATION']
+            
+        try:
+            with open("django_log.txt", "w", encoding='utf-8') as fid:
+                fid.write(f"{text}\n")
+                fid.write(f"{threshold}\n")
+                fid.write(f"{allLabels}\n")
+        except Exception:
+            pass
+            
         # Obtiene las entidades del análisis NER
-        entities = perform_ner_analysis(text)
+        entities = perform_ner_analysis(text, labels=labels, threshold=threshold)
         
         # Create aggregate object
         aggregate_result = {
@@ -25,7 +43,7 @@ def index(request):
         return JsonResponse(aggregate_result)
     return render(request, 'ner_app/index.html')
 
-def perform_ner_analysis(text, labels=['PERSON', 'GPE', 'DATE', 'TIME', 'LOCATION', 'ORGANIZATION', 'MONEY', 'PERCENT', 'FACILITY']):
+def perform_ner_analysis(text, labels=['PERSON', 'GPE', 'DATE', 'TIME', 'LOCATION', 'ORGANIZATION', 'MONEY', 'PERCENT', 'FACILITY'], threshold=0.3):
     # Proceso principal del NER
     # Tokenization
     tokens = word_tokenize(text)
@@ -45,7 +63,7 @@ def perform_ner_analysis(text, labels=['PERSON', 'GPE', 'DATE', 'TIME', 'LOCATIO
     filtered_entities = [{'entity': name, 'type': label, 'count': count} for (name, label), count in entity_counter.items()]
     
     # Merge the entities using Tf-idf and cosine similarity
-    merged_entities = merge_entities(filtered_entities, threshold=0.3)
+    merged_entities = merge_entities(filtered_entities, threshold=threshold)
     
     # Sort the filtered entities
     sorted_entities = sorted(merged_entities, key=lambda x: (-x['count'], x['entity'], x['type']))
@@ -56,14 +74,27 @@ def perform_ner_analysis(text, labels=['PERSON', 'GPE', 'DATE', 'TIME', 'LOCATIO
 def save_results(request):
     if request.method == 'POST':
         text = request.POST.get('text')
+        try:
+            threshold = float(request.POST.get('threshold'))
+        except Exception:
+            threshold = 0.5
+        allLabels = request.POST.get('allLabels')
+        if allLabels=='true':
+            labels=['PERSON', 'GPE', 'DATE', 'TIME', 'LOCATION', 'ORGANIZATION', 'MONEY', 'PERCENT', 'FACILITY']
+        else:
+            labels=['PERSON', 'GPE', 'DATE', 'TIME', 'LOCATION']
+            
+        # try:
+        #     with open("django_log.txt", "w", encoding='utf-8') as fid:
+        #         fid.write(f"{text}\n")
+        #         fid.write(f"{threshold}\n")
+        #         fid.write(f"{allLabels}\n")
+        # except Exception:
+        #     pass
+            
         # Obtiene las entidades del análisis NER
-        entities = perform_ner_analysis(text)
-        
-           
-        with open("C:/Users/jorge/OneDrive - FERCEL/Python/DataScience/artificial_intelligence/proyecto_final/django_log.txt", "w") as fid:
-            fid.write(f"{text}\n")
-            fid.write(f"{entities}\n")
-        
+        entities = perform_ner_analysis(text, labels=labels, threshold=threshold)
+               
         # Save NERText object
         ner_text = NERText.objects.create(text=text)
         
