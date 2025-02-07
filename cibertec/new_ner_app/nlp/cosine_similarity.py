@@ -24,8 +24,8 @@ def cosine_similarity_tfidf(str1, str2):
     
     # Tokenize and remove stopwords
     stop_words = set(stopwords.words('english'))
-    tokens1 = ' '.join([word for word in word_tokenize(str1.lower()) if word not in stop_words])
-    tokens2 = ' '.join([word for word in word_tokenize(str2.lower()) if word not in stop_words])
+    tokens1 = ' '.join([word for word in word_tokenize(str1) if word not in stop_words])
+    tokens2 = ' '.join([word for word in word_tokenize(str2) if word not in stop_words])
     
     # Create TF-IDF vectors
     vectorizer = TfidfVectorizer().fit_transform([tokens1, tokens2])
