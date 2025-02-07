@@ -13,4 +13,5 @@ class NERResult(models.Model):
     occurrences = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"{self.entity} ({self.entity_type}) - {self.occurrences}"
+        # return f"{self.entity} ({self.entity_type}) - {self.occurrences}"
+        return f"{self.entity}|{self.entity_type}|{self.occurrences}"

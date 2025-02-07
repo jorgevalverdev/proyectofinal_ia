@@ -113,13 +113,29 @@
             console.log('Delete NERText with ID:', id);
         }
 
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(function() {
+        function copyToClipboard(text, entities) {
+            let clipboardText = `Text: ${text}\n\nEntities:\n`;
+            entities.forEach(entity => {
+                clipboardText += `Entity: ${entity.entity}, Type: ${entity.entity_type}, Occurrences: ${entity.occurrences}\n`;
+            });
+
+            navigator.clipboard.writeText(clipboardText).then(function() {
                 console.log('Text copied to clipboard');
             }, function(err) {
                 console.error('Could not copy text: ', err);
             });
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const copyButtons = document.querySelectorAll('.copy-btn');
+            copyButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const text = this.getAttribute('data-text');
+                    const entities = JSON.parse(this.getAttribute('data-entities').replace(/'/g, '"'));
+                    copyToClipboard(text, entities);
+                });
+            });
+        });
     </script>
 </head>
 <body>
@@ -141,7 +157,7 @@
                         <span>Text</span>
                         <div>
                             <button onclick="deleteNERText({{ result.ner_text.id }})">Delete</button>
-                            <button onclick="copyToClipboard('{{ result.ner_text.text }}')">Copy</button>
+                            <button class="copy-btn" data-text="{{ result.ner_text.text }}" data-entities='{{ result.ner_results|safe }}'>Copy</button>
                         </div>
                     </div>
                     <p>{{ result.ner_text.text }}</p>

@@ -16,6 +16,16 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            overflow: hidden; /* Prevent body scroll */
+        }
+
+        .outer-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
         }
 
         .container {
@@ -26,6 +36,8 @@
             width: 80%;
             max-width: 800px;
             color: #00ffcc;
+            overflow-y: auto; /* Enable vertical scroll */
+            max-height: 90vh; /* Adjust to fit within the viewport */
         }
 
         textarea {
@@ -43,11 +55,12 @@
 
         .buttons {
             display: flex;
-            justify-content: space-between;
+            align-items: flex-end; /* Align items to the bottom */
             margin-bottom: 1.5rem;
+            flex-wrap: wrap; /* Allow buttons to wrap to the next line */
         }
 
-        button {
+        button, .upload-btn {
             padding: 10px 20px;
             border: none;
             border-radius: 5px;
@@ -56,9 +69,12 @@
             font-size: 1rem;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            margin-bottom: 10px; /* Add margin for spacing */
+            height: 40px; /* Fixed height for buttons */
+            box-sizing: border-box; /* Ensure padding is included in height */
         }
 
-        button:hover {
+        button:hover, .upload-btn:hover {
             background-color: #00ccaa;
         }
 
@@ -87,34 +103,80 @@
         .hidden {
             display: none;
         }
+
+        .file-input-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .file-input-container input[type="file"] {
+            display: none;
+        }
+
+        .file-input-container label {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #00ffcc;
+            color: #1a1a1a;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-right: 10px; /* Add margin for spacing */
+        }
+
+        .file-input-container label:hover {
+            background-color: #00ccaa;
+        }
+
+        .threshold-input {
+            width: 100px; /* Adjust width as needed */
+            padding: 10px;
+            border: 2px solid #00ffcc;
+            border-radius: 5px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-size: 1rem;
+            margin-right: 5px; /* 5px spacing between Threshold and Analyze */
+            height: 40px; /* Same height as buttons */
+            box-sizing: border-box; /* Ensure padding is included in height */
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Named Entity Recognition (NER) with NLTK</h1>
-        <form id="ner-form" method="post">
-            {% csrf_token %}
-            <textarea id="input-text" name="text" placeholder="Enter your text here..."></textarea>
-            <div class="buttons">
-                <button type="submit">Analyze</button>
-                <button type="button" id="clear-btn">Clear</button>
-                <button type="button" id="save-btn">Save</button>
-                <a href="{% url 'results' %}"><button type="button">View Saved Results</button></a>
-                <a href="{% url 'index' %}"><button type="button">Home</button></a>
-            </div>
-        </form>
-        <table id="results-table" class="hidden">
-            <thead>
-                <tr>
-                    <th>Entity</th>
-                    <th>Type</th>
-                    <th>Occurrences</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Results will be populated here -->
-            </tbody>
-        </table>
+    <div class="outer-container">
+        <div class="container">
+            <h1>Named Entity Recognition (NER) with NLTK</h1>
+            <form id="ner-form" method="post">
+                {% csrf_token %}
+                <div class="file-input-container">
+                    <input type="file" id="file-input" accept=".docx,.pdf,.txt">
+                    <label for="file-input" class="upload-btn">Upload File</label>
+                    <button type="button" id="clear-btn">Clear</button>
+                </div>
+                <textarea id="input-text" name="text" placeholder="Enter your text here..."></textarea>
+                <div class="buttons">
+                    <input type="text" id="threshold-input" class="threshold-input" placeholder="Threshold">
+                    <button type="submit">Analyze</button>
+                    <button type="button" id="save-btn">Save</button>
+                    <a href="{% url 'results' %}"><button type="button">View Saved Results</button></a>
+                    <a href="{% url 'index' %}"><button type="button">Home</button></a>
+                </div>
+            </form>
+            <table id="results-table" class="hidden">
+                <thead>
+                    <tr>
+                        <th>Entity</th>
+                        <th>Type</th>
+                        <th>Occurrences</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Results will be populated here -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
@@ -198,6 +260,27 @@
                 }
             })
             .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('file-input').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                fetch('{% url "upload_file" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('input-text').value = data.text;
+                })
+                .catch(error => console.error('Error:', error));
+            }
         });
     </script>
 </body>
