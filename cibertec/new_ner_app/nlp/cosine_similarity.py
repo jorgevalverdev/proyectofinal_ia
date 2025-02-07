@@ -10,10 +10,22 @@ from sklearn.metrics.pairwise import cosine_similarity as sklearn_cosine_similar
 
 # Function to calculate cosine similarity using TF-IDF
 def cosine_similarity_tfidf(str1, str2):
+    
+    import re
+
+    def limpiar_texto(texto):
+        texto = texto.lower()
+        texto = re.sub(r'[^a-zA-Z0-9\n ]', '', texto)
+        return texto
+    
+    # Remove unwanted characters
+    str1 = limpiar_texto(str1)
+    str2 = limpiar_texto(str2)
+    
     # Tokenize and remove stopwords
     stop_words = set(stopwords.words('english'))
-    tokens1 = ' '.join([word for word in word_tokenize(str1.lower()) if word.isalnum() and word not in stop_words])
-    tokens2 = ' '.join([word for word in word_tokenize(str2.lower()) if word.isalnum() and word not in stop_words])
+    tokens1 = ' '.join([word for word in word_tokenize(str1.lower()) if word not in stop_words])
+    tokens2 = ' '.join([word for word in word_tokenize(str2.lower()) if word not in stop_words])
     
     # Create TF-IDF vectors
     vectorizer = TfidfVectorizer().fit_transform([tokens1, tokens2])
