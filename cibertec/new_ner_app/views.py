@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect
 import nltk
 from nltk import word_tokenize, pos_tag, ne_chunk
 from collections import Counter
@@ -16,7 +17,7 @@ def index(request):
         try:
             threshold = float(request.POST.get('threshold'))
         except Exception:
-            threshold = 0.3
+            threshold = 0.5
         allLabels = request.POST.get('allLabels')
         if allLabels=='true':
             labels=['PERSON', 'GPE', 'DATE', 'TIME', 'LOCATION', 'ORGANIZATION', 'MONEY', 'PERCENT', 'FACILITY']
@@ -130,6 +131,15 @@ def results(request):
     # Return JSON object
     return render(request, 'ner_app/results.html', {'saved_results': list_results})
 
+
+def delete_ner_text(request, id):
+    if request.method == 'POST':
+        ner_text = get_object_or_404(NERText, id=id)
+        ner_text.delete()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False})
+
+
 def upload_file(request):
     if request.method == 'POST':
         uploaded_file = request.FILES['file']
@@ -161,3 +171,6 @@ def extract_text_from_pdf(pdf_file):
 def extract_text_from_docx(docx_file):
     result = mammoth.extract_raw_text(docx_file)
     return result.value
+
+
+

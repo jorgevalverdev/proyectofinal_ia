@@ -345,6 +345,7 @@
                 return;
             }
 
+            const allLabels = document.getElementById('all-labels').checked;
             fetch('{% url "save_results" %}', {
                 method: 'POST',
                 headers: {
@@ -353,7 +354,8 @@
                 },
                 body: new URLSearchParams({
                     'text': analyzedData.text,
-                    'entities': analyzedData.entities.map(e => `${e.entity}|${e.type}|${e.count}`)
+                    'entities': analyzedData.entities.map(e => `${e.entity}|${e.type}|${e.count}`),
+                    'allLabels': allLabels
                 })
             })
             .then(response => response.json())

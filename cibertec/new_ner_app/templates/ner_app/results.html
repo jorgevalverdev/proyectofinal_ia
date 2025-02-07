@@ -109,14 +109,39 @@
     </style>
     <script>
         function deleteNERText(id) {
-            // Implement the delete functionality here
-            console.log('Delete NERText with ID:', id);
+            fetch(`/delete_ner_text/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('NERText deleted successfully');
+                    location.reload(); // Reload the page to reflect changes
+                } else {
+                    alert('Failed to delete NERText');
+                }
+            });
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const deleteButtons = document.querySelectorAll('.delete-btn');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = this.getAttribute('data-text');
+                    deleteNERText(id);
+                });
+            });
+        });
 
         function copyToClipboard(text, entities) {
             let clipboardText = `${text}\n`;
             navigator.clipboard.writeText(clipboardText).then(function() {
                 console.log('Text copied to clipboard');
+                alert('Text copied to clipboard');
             }, function(err) {
                 console.error('Could not copy text: ', err);
             });
@@ -151,7 +176,7 @@
                     <div class="text-header">
                         <span>Text</span>
                         <div>
-                            <button onclick="deleteNERText({{ result.ner_text.id }})">Delete</button>
+                            <button class="delete-btn" data-text="{{ result.ner_text.id }}">Delete</button>
                             <button class="copy-btn" data-text="{{ result.ner_text.text }}">Copy</button>
                         </div>
                     </div>
